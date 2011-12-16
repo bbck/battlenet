@@ -21,6 +21,18 @@ class Battlenet
   include Battlenet::Arena
   include Battlenet::Data
 
+  class APIError < Exception
+    attr_reader :code, :body
+    def initialize(code, body)
+      @code = code
+      @body = body
+    end
+
+    def to_s
+      "Status: #{code} Body: #{body}"
+    end
+  end
+
   class << self
     attr_accessor :fail_silently
     attr_accessor :locale
@@ -86,7 +98,7 @@ class Battlenet
     response = self.class.send(verb, path, options)
 
     if response.code != 200 && Battlenet.fail_silently == false
-      raise "Non-200 response: #{response.code}, #{response.body}"
+      raise Battlenet::APIError.new(response.code, response.body)
     end
     response
   end
